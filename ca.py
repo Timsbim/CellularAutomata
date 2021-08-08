@@ -5,8 +5,6 @@ from multiprocessing import Pool
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pprint import pprint
-
 
 def build_rule(n):
     """Build the rule with number no as a mapping (dictionary):
@@ -25,7 +23,7 @@ def print_states(states, on='*', off=' '):
     print('\n'.join(''.join(on if s else off for s in row) for row in states))
 
 
-def evolve(start_state, rule, iterations, folder=None):
+def evolve(rule_n, start_state, iterations, folder=None):
     """Calculate the evolution of a row of cellular automata given in
     start_state under the rule with number rule over iterations many steps
     and saves the result as an image
@@ -33,11 +31,11 @@ def evolve(start_state, rule, iterations, folder=None):
 
     # Setup: Matrix for recording the states. First row is the given start
     # state
-    states = np.zeros((len(start_state), iterations + 1), np.uint8)
+    states = np.zeros((iterations + 1, len(start_state)), np.uint8)
     states[0] = start_state
 
     # Build the rule
-    rule = build_rule(rule)
+    rule = build_rule(rule_n)
 
     # Calculate the evolution (cells on the the edges always stay 0)
     m = states.shape[1] - 1
@@ -52,21 +50,33 @@ def evolve(start_state, rule, iterations, folder=None):
         if not path.exists():
             path.mkdir(exist_ok=True)
         plt.imsave(
-            path / f'ca_{rule}.png', states, cmap=plt.get_cmap('Blues')
+            path / f"ca_{rule_n}.png", states, cmap=plt.get_cmap('Blues')
         )
 
-    return None
+
+def evolve_all(*, start_state=None, iterations=100, folder=None):
+    # Create folder before multiprocessing to avoid (very unlikely) collision
+    if folder is None:
+        folder = Path.cwd() / "plots"
+    path = Path(folder)
+    if not path.exists():
+        path.mkdir(exist_ok=True)
+
+    # If no start state is given, use one with all zeroes except for the cell
+    # in the middle
+    if start_state is None:
+        start_state = np.zeros(iterations, dtype=np.uint8)
+        start_state[iterations // 2] = 1
+
+    # Use a pool for the calculations
+    args = (
+        (n, start_state.copy(), iterations, path) for n in range(1, 257)
+    )
+    with Pool(14) as p:
+        p.starmap(evolve, args, chunksize=4)
 
 
 if __name__ == '__main__':
 
-    size = 100
-    iterations = size - 1
-    start_state = np.zeros(size, dtype=np.uint8)
-    start_state[size // 2] = 1
+    evolve_all()
 
-    args = (
-        (start_state.copy(), n, iterations, None) for n in range(1, 257)
-    )
-    with Pool(14) as p:
-        p.starmap(evolve, args, chunksize=4)
