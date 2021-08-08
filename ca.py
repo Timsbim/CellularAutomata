@@ -18,7 +18,7 @@ def build_rule(n):
     return {state: int(bit) for state, bit in zip(combos, rule_str)}
 
 
-def print_states(states, on='*', off=' '):
+def print_states(states, on="*", off=" "):
     """Print state evolution on console (on for state 1, off for state 0)"""
     print('\n'.join(''.join(on if s else off for s in row) for row in states))
 
@@ -76,7 +76,7 @@ def evolve_all(*, start_state=None, iterations=100, folder=None):
         p.starmap(evolve, args, chunksize=4)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     evolve_all()
 
