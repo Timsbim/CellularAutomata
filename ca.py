@@ -50,7 +50,7 @@ def evolve(rule_n, start_state, iterations, folder=None):
         if not path.exists():
             path.mkdir(exist_ok=True)
         plt.imsave(
-            path / f"ca_{rule_n}.png", states, cmap=plt.get_cmap('Blues')
+            path / f"ca_{rule_n:0>3}.png", states, cmap=plt.get_cmap('Blues')
         )
 
 
