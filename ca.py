@@ -53,6 +53,7 @@ def evolve(rule_n, start_state, iterations, folder=None):
             path / f"ca_{rule_n:0>3}.png", states, cmap=plt.get_cmap("Blues")
         )
 
+    return states
 
 def evolve_all(
     *, rules=range(1, 257), start_state=None, iterations=100, folder=None
@@ -78,6 +79,31 @@ def evolve_all(
     args = ((n, start_state.copy(), iterations, path) for n in rules)
     with Pool(12) as p:
         p.starmap(evolve, args, chunksize=4)
+
+
+def evolve_animated(rule_n, start_state=None, iterations=100, folder=None):
+
+    # If no start state is given, use one with all zeroes except for the cell
+    # in the middle
+    if start_state is None:
+        start_state = np.zeros(iterations, dtype=np.uint8)
+        start_state[iterations // 2] = 1
+
+    states = evolve(rule_n, start_state, iterations * 5, folder=None)
+
+    fig = plt.figure(figsize=(10, 10))
+    ax = plt.axes()
+    ax.axis("off")
+
+    def run(i):
+        ax.clear()
+        ax.axis("off")
+        if i <= iterations + 1:
+            frame = np.zeros((iterations + 1, len(start_state)), dtype=np.int8)
+            frame[0 : i, :] = states[0:i, :]
+        else:
+            frame = states[i - iterations : i, :]
+        pass
 
 
 if __name__ == "__main__":
