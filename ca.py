@@ -1,5 +1,5 @@
 from pathlib import Path
-from itertools import product, starmap
+from itertools import product
 from multiprocessing import Pool
 
 import numpy as np
