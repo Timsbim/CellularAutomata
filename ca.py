@@ -4,6 +4,7 @@ from multiprocessing import Pool
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 
 def build_rule(n):
@@ -85,7 +86,9 @@ def evolve_all(
             p.starmap(evolve, args, chunksize=4)
 
 
-def evolve_animated(rule_n, start=None, iterations=100, folder=None):
+def evolve_animated(
+        rule_n, start=None, iterations=100, save=False, folder=None
+):
 
     # If no start state is given, use one with all zeroes except for the cell
     # in the middle
@@ -93,6 +96,14 @@ def evolve_animated(rule_n, start=None, iterations=100, folder=None):
         start = np.zeros(iterations, dtype=np.uint8)
         m, r = divmod(iterations, 2)
         start[m + r] = 1
+
+    # Create folder if it doesn't exist
+    if save:
+        if folder is None:
+            folder = Path.cwd() / "plots"
+        path = Path(folder)
+        if not path.exists():
+            path.mkdir(exist_ok=True)
 
     states = evolve(rule_n, start, iterations * 5, folder=None)
 
@@ -103,10 +114,22 @@ def evolve_animated(rule_n, start=None, iterations=100, folder=None):
     def run(i):
         ax.clear()
         ax.axis("off")
-        if i <= iterations + 1:
-            frame = np.zeros((iterations + 1, len(start)), dtype=np.int8)
-            frame[0 : i, :] = states[0 : i, :]
+        if i < iterations:
+            frame = np.zeros((iterations, len(start)), dtype=np.int8)
+            frame[0 : i + 1, :] = states[0 : i + 1, :]
         else:
-            frame = states[i - iterations : i + 1, :]
-        pass
+            frame = states[i - iterations + 1 : i + 1, :]
+        img = ax.imshow(frame)
 
+        return img,
+
+    ani = FuncAnimation(
+        fig, run, frames=iterations * 4, interval=1, repeat=True, blit=True
+    )
+    if save:
+        file_path = folder / f"ca_{rule_n:3>0}.gif"
+        ani.save(file_path)
+    plt.show()
+
+
+evolve_animated(105, save=True)
