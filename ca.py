@@ -1,15 +1,14 @@
+from pathlib import Path
+from itertools import product, starmap
+from multiprocessing import Pool
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pathlib import Path
-from itertools import product, starmap
-
 from pprint import pprint
-from time import perf_counter
-from multiprocessing import Pool
 
 
-def build_rule(no):
+def build_rule(n):
     """Build the rule with number no as a mapping (dictionary):
                  triple(0/1, 0/1, 0/1) -> new state of cell
                          ^    ^    ^
@@ -17,18 +16,18 @@ def build_rule(no):
                      neighbour  neighbour
     """
     combos = product((0, 1), repeat=3)
-    rule_str = f"{bin(no)[-1:1:-1]:0<8}"
+    rule_str = f"{bin(n)[-1:1:-1]:0<8}"
     return {state: int(bit) for state, bit in zip(combos, rule_str)}
 
 
 def print_states(states, on='*', off=' '):
-    """Print state evolvement on console (on for state 1, off for state 0)"""
+    """Print state evolution on console (on for state 1, off for state 0)"""
     print('\n'.join(''.join(on if s else off for s in row) for row in states))
 
 
-def evolve(start_state, rule_no, iterations, folder=None):
+def evolve(start_state, rule, iterations, folder=None):
     """Calculate the evolution of a row of cellular automata given in
-    start_state under the rule with number rule_no over iterations many steps
+    start_state under the rule with number rule over iterations many steps
     and saves the result as an image
     """
 
@@ -38,7 +37,7 @@ def evolve(start_state, rule_no, iterations, folder=None):
     states[0] = start_state
 
     # Build the rule
-    rule = build_rule(rule_no)
+    rule = build_rule(rule)
 
     # Calculate the evolution (cells on the the edges always stay 0)
     m = states.shape[1] - 1
@@ -53,7 +52,7 @@ def evolve(start_state, rule_no, iterations, folder=None):
         if not path.exists():
             path.mkdir(exist_ok=True)
         plt.imsave(
-            path / f'ca_{rule_no}.png', states, cmap=plt.get_cmap('Blues')
+            path / f'ca_{rule}.png', states, cmap=plt.get_cmap('Blues')
         )
 
     return None
@@ -66,31 +65,8 @@ if __name__ == '__main__':
     start_state = np.zeros(size, dtype=np.uint8)
     start_state[size // 2] = 1
 
-    start = perf_counter()
-    results = [
-        *starmap(
-            evolve,
-            (
-                (start_state.copy(), no, iterations, 'tmp1')
-                for no in range(1, 257)
-            )
-        )
-    ]
-    end = perf_counter()
-    normal = end - start
-
-    start = perf_counter()
+    args = (
+        (start_state.copy(), n, iterations, None) for n in range(1, 257)
+    )
     with Pool(14) as p:
-        p.starmap(
-              evolve,
-              (
-                  (start_state.copy(), no, iterations, 'tmp2')
-                  for no in range(1, 257)
-              ),
-              chunksize=4
-          )
-    end = perf_counter()
-    parallel = end - start
-
-    print('Starmap (normal):', normal)
-    print('Starmap (parallel):', parallel)
+        p.starmap(evolve, args, chunksize=4)
