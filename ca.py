@@ -127,7 +127,7 @@ def evolve_animated(
         fig, run, frames=iterations * 4, interval=1, repeat=True, blit=True
     )
     if save:
-        file_path = folder / f"ca_{rule_n:3>0}.gif"
+        file_path = folder / f"ca_{rule_n:0>3}.gif"
         ani.save(file_path)
     plt.show()
 
