@@ -74,7 +74,7 @@ def evolve_all(
         start_state = np.zeros(iterations, dtype=np.uint8)
         start_state[iterations // 2] = 1
 
-    # Use a pool for the calculations
+    # Use a pool to speed up the calculations
     args = ((n, start_state.copy(), iterations, path) for n in rules)
     with Pool(12) as p:
         p.starmap(evolve, args, chunksize=4)
