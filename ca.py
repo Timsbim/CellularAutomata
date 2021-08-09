@@ -63,27 +63,25 @@ def evolve_all(
     """Plot the evolution with given start state for all rule numbers given
     (default = all)
     """
-    if __name__ == "__main__":  # Only for starting the Pool-processes
+    # Create folder if it doesn't exist
+    if folder is None:
+        folder = Path.cwd() / "plots"
+    path = Path(folder)
+    if not path.exists():
+        path.mkdir(exist_ok=True)
 
-        # Create folder if it doesn't exist
-        if folder is None:
-            folder = Path.cwd() / "plots"
-        path = Path(folder)
-        if not path.exists():
-            path.mkdir(exist_ok=True)
+    # If no start state is given, use one with all zeroes except for the
+    # cell in the middle
+    if start is None:
+        start = np.zeros(iterations, dtype=np.uint8)
+        m, r = divmod(iterations, 2)
+        start[m + r] = 1
 
-        # If no start state is given, use one with all zeroes except for the
-        # cell in the middle
-        if start is None:
-            start = np.zeros(iterations, dtype=np.uint8)
-            m, r = divmod(iterations, 2)
-            start[m + r] = 1
-
-        # Use multiprocessing Pool to speed up the calculations (which are
-        # independent)
-        args = ((n, start.copy(), iterations, path) for n in rules)
-        with Pool(12) as p:
-            p.starmap(evolve, args, chunksize=4)
+    # Use multiprocessing Pool to speed up the calculations (which are
+    # independent)
+    args = ((n, start.copy(), iterations, path) for n in rules)
+    with Pool(min(len(rules), 12)) as p:
+        p.starmap(evolve, args, chunksize=4)
 
 
 def evolve_animated(
@@ -132,4 +130,6 @@ def evolve_animated(
     plt.show()
 
 
-evolve_animated(105, save=True)
+if __name__ == "__main__":  # Only for starting the Pool-processes
+
+    evolve_animated(105, save=True)
