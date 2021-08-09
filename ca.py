@@ -80,7 +80,7 @@ def evolve_all(
     # Use multiprocessing Pool to speed up the calculations (which are
     # independent)
     args = ((n, start.copy(), iterations, path) for n in rules)
-    with Pool(min(len(rules), 12)) as p:
+    with Pool(12) as p:
         p.starmap(evolve, args, chunksize=4)
 
 
