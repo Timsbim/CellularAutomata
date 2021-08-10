@@ -81,7 +81,7 @@ def evolve_all(
     # independent)
     args = ((n, start.copy(), iterations, path) for n in rules)
     with Pool(12) as p:
-        p.starmap(evolve, args, chunksize=4)
+        p.starmap(evolve, args)
 
 
 def evolve_animated(
