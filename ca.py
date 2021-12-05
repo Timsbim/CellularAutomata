@@ -42,7 +42,7 @@ def evolve(rule_n, start, iterations, folder=None):
     m = states.shape[1] - 1
     for t in range(1, states.shape[0]):
         states[t, 1:m] = [
-            rule[tuple(states[t - 1, i - 1 : i + 2])] for i in range(1, m)
+            rule[tuple(states[t - 1, i - 1:i + 2])] for i in range(1, m)
         ]
 
     # Save result
@@ -114,9 +114,9 @@ def evolve_animated(
         ax.axis("off")
         if i < iterations:
             frame = np.zeros((iterations, len(start)), dtype=np.int8)
-            frame[0 : i + 1, :] = states[0 : i + 1, :]
+            frame[0:i + 1, :] = states[0:i + 1, :]
         else:
-            frame = states[i - iterations + 1 : i + 1, :]
+            frame = states[i - iterations + 1:i + 1, :]
         img = ax.imshow(frame)
 
         return img,
