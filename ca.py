@@ -85,7 +85,7 @@ def evolve_all(
 
 
 def evolve_animated(
-        rule_n, start=None, iterations=100, save=False, folder=None
+    rule_n, start=None, iterations=100, save=False, folder=None
 ):
 
     # If no start state is given, use one with all zeroes except for the cell
